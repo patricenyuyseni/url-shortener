@@ -1,11 +1,8 @@
 import express from "express";
+import { createLink } from "../controllers/links.controller.js";
 
 const router = express.Router();
 
-router.post("/", (req, res) => {
-    res.status(201).json({
-        message: "Link created successfully"
-    });
-});
+router.post("/", createLink);
 
 export default router;
