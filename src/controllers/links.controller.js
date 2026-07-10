@@ -21,8 +21,11 @@ export async function createLink(req, res) {
                 message: "The provided code already exists. Please choose a different code."
             });
         }
+
+        console.log(error);
         res.status(500).json({
             message: "Internal server error",
+            error: error.message
         });
     }
 }
