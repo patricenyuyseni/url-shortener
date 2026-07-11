@@ -1,7 +1,8 @@
 import { ZodError } from "zod";
 import {
     createLinkService,
-    getLinkByCodeService
+    getLinkByCodeService,
+    getLinkClicksService
 } from "../services/links.services.js";
 import { createLinkSchema } from "../validators/links.validator.js";
 
@@ -60,4 +61,29 @@ export async function getLinkByCode(req, res) {
             message: "Internal server error"
         });
     }
+
 }
+
+export async function getLinkClicks(req, res) {
+    try {
+        const { code } = req.params;
+
+        const after = req.query.after || null;
+        const limit = Number(req.query.limit) || 10;
+
+        const clicks = await getLinkClicksService(
+            code,
+            after,
+            limit
+        );
+
+        res.status(200).json(clicks);
+
+    } catch (error) {
+        console.log(error);
+
+        res.status(500).json({
+            message: "Internal server error"
+        });
+    }
+    }
