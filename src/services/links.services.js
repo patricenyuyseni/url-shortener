@@ -74,3 +74,16 @@ export async function getLinkClicksService(
 
     return result.rows;
 }
+
+export async function deleteLinkService(code) {
+    const result = await db.query(
+        `
+        DELETE FROM links
+        WHERE code = $1
+        RETURNING *;
+        `,
+        [code]
+    );
+
+    return result.rows[0];
+}

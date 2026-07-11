@@ -2,7 +2,8 @@ import { ZodError } from "zod";
 import {
     createLinkService,
     getLinkByCodeService,
-    getLinkClicksService
+    getLinkClicksService,
+    deleteLinkService
 } from "../services/links.services.js";
 import { createLinkSchema } from "../validators/links.validator.js";
 
@@ -87,3 +88,29 @@ export async function getLinkClicks(req, res) {
         });
     }
     }
+
+    export async function deleteLink(req, res) {
+    try {
+        const { code } = req.params;
+
+        const deletedLink = await deleteLinkService(code);
+
+        if (!deletedLink) {
+            return res.status(404).json({
+                message: "Link not found"
+            });
+        }
+
+        res.status(200).json({
+            message: "Link deleted successfully",
+            data: deletedLink
+        });
+
+    } catch (error) {
+        console.log(error);
+
+        res.status(500).json({
+            message: "Internal server error"
+        });
+    }
+}
