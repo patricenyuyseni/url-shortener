@@ -1,4 +1,5 @@
 import { ZodError } from "zod";
+
 import {
     createLinkService,
     getLinkByCodeService,
@@ -6,8 +7,9 @@ import {
     deleteLinkService,
     getLinkClicksCsvService
 } from "../services/links.services.js";
-import { createLinkSchema } from "../validators/links.validator.js";
-import { clicksQuerySchema } from "../validators/links.validator.js";
+
+import { createLinkSchema, clicksQuerySchema } from "../validators/links.validator.js";
+
 
 export async function createLink(req, res) {
     try {
@@ -21,6 +23,7 @@ export async function createLink(req, res) {
         });
 
     } catch (error) {
+
         if (error instanceof ZodError) {
             return res.status(400).json({
                 message: "Validation error",
@@ -37,11 +40,11 @@ export async function createLink(req, res) {
         console.log(error);
 
         res.status(500).json({
-            message: "Internal server error",
-            error: error.message
+            message: "Internal server error"
         });
     }
 }
+
 
 export async function getLinkByCode(req, res) {
     try {
@@ -58,6 +61,7 @@ export async function getLinkByCode(req, res) {
         res.status(200).json(result);
 
     } catch (error) {
+
         console.log(error);
 
         res.status(500).json({
@@ -67,10 +71,8 @@ export async function getLinkByCode(req, res) {
 }
 
 
-
 export async function getLinkClicks(req, res) {
     try {
-
         const { code } = req.params;
 
         const query = clicksQuerySchema.parse(req.query);
@@ -106,7 +108,8 @@ export async function getLinkClicks(req, res) {
     }
 }
 
-    export async function deleteLink(req, res) {
+
+export async function deleteLink(req, res) {
     try {
         const { code } = req.params;
 
@@ -115,6 +118,7 @@ export async function getLinkClicks(req, res) {
         res.status(204).send();
 
     } catch (error) {
+
         console.log(error);
 
         res.status(500).json({
@@ -122,6 +126,7 @@ export async function getLinkClicks(req, res) {
         });
     }
 }
+
 
 export async function getLinkClicksCsv(req, res) {
     try {
@@ -144,6 +149,7 @@ export async function getLinkClicksCsv(req, res) {
         res.status(200).send(csv);
 
     } catch (error) {
+
         console.log(error);
 
         res.status(500).json({
