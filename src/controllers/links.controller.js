@@ -3,7 +3,8 @@ import {
     createLinkService,
     getLinkByCodeService,
     getLinkClicksService,
-    deleteLinkService
+    deleteLinkService,
+    getLinkClicksCsvService
 } from "../services/links.services.js";
 import { createLinkSchema } from "../validators/links.validator.js";
 import { clicksQuerySchema } from "../validators/links.validator.js";
@@ -80,6 +81,12 @@ export async function getLinkClicks(req, res) {
             query.limit || 10
         );
 
+        if (clicks?.status === "not_found") {
+            return res.status(404).json({
+                message: "Link not found"
+            });
+        }
+
         res.status(200).json(clicks);
 
     } catch (error) {
@@ -103,18 +110,38 @@ export async function getLinkClicks(req, res) {
     try {
         const { code } = req.params;
 
-        const deletedLink = await deleteLinkService(code);
+        await deleteLinkService(code);
 
-        if (!deletedLink) {
-            return res.status(404).json({
-                message: "Link not found"
-            });
+        res.status(204).send();
+
+    } catch (error) {
+        console.log(error);
+
+        res.status(500).json({
+            message: "Internal server error"
+        });
+    }
+}
+
+export async function getLinkClicksCsv(req, res) {
+    try {
+        const { code } = req.params;
+
+        const clicks = await getLinkClicksCsvService(code);
+
+        res.setHeader("Content-Type", "text/csv");
+        res.setHeader(
+            "Content-Disposition",
+            `attachment; filename="${code}-clicks.csv"`
+        );
+
+        let csv = "id,clicked_at,referrer,user_agent\n";
+
+        for (const click of clicks) {
+            csv += `${click.id},${click.clicked_at},${click.referrer || ""},${click.user_agent || ""}\n`;
         }
 
-        res.status(200).json({
-            message: "Link deleted successfully",
-            data: deletedLink
-        });
+        res.status(200).send(csv);
 
     } catch (error) {
         console.log(error);

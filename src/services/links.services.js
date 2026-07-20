@@ -38,12 +38,9 @@ export async function getLinkByCodeService(code) {
     return result.rows[0];
 }
 
-export async function getLinkClicksService(
-    code,
-    after,
-    limit
-) {
-    const linkResult = await db.query(
+export async function getLinkClicksService(code, after, limit) {
+
+    const link = await db.query(
         `
         SELECT id
         FROM links
@@ -52,24 +49,26 @@ export async function getLinkClicksService(
         [code]
     );
 
-    const link = linkResult.rows[0];
-
-    if (!link) {
-        return [];
+    if (link.rows.length === 0) {
+        return {
+            status: "not_found"
+        };
     }
 
-    const query = `
-        SELECT *
-        FROM clicks
-        WHERE link_id = $1
-        AND ($2::timestamp IS NULL OR clicked_at > $2)
-        ORDER BY clicked_at ASC
-        LIMIT $3
-    `;
 
     const result = await db.query(
-        query,
-        [link.id, after, limit]
+        `
+        SELECT 
+            clicks.*
+        FROM clicks
+        WHERE link_id = $1
+        ORDER BY clicked_at ASC
+        LIMIT $2
+        `,
+        [
+            link.rows[0].id,
+            limit
+        ]
     );
 
     return result.rows;
@@ -86,4 +85,23 @@ export async function deleteLinkService(code) {
     );
 
     return result.rows[0];
+}
+
+export async function getLinkClicksCsvService(code) {
+    const result = await db.query(
+        `
+        SELECT 
+            clicks.id,
+            clicks.clicked_at,
+            clicks.referrer,
+            clicks.user_agent
+        FROM clicks
+        JOIN links ON links.id = clicks.link_id
+        WHERE links.code = $1
+        ORDER BY clicks.clicked_at ASC
+        `,
+        [code]
+    );
+
+    return result.rows;
 }

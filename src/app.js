@@ -42,5 +42,6 @@ app.use("/links", linksRoutes);
 
 app.get("/:code", redirectLink);
 
+app.get("/:code", redirectLink);
 
 export default app;
