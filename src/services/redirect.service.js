@@ -18,7 +18,13 @@ export async function redirectLinkService(code, req) {
         const link = linkResult.rows[0];
 
         if (!link) {
-            throw new Error("LINK_NOT_FOUND");
+            await client.query("ROLLBACK");
+            return { status: "not_found" };
+        }
+
+        if (link.expires_at && new Date(link.expires_at) <= new Date()) {
+            await client.query("ROLLBACK");
+            return { status: "expired" };
         }
 
         await client.query(
@@ -45,9 +51,11 @@ export async function redirectLinkService(code, req) {
         await client.query("COMMIT");
 
         return link;
+
     } catch (error) {
         await client.query("ROLLBACK");
         throw error;
+
     } finally {
         client.release();
     }
