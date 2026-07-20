@@ -6,6 +6,7 @@ import {
     deleteLinkService
 } from "../services/links.services.js";
 import { createLinkSchema } from "../validators/links.validator.js";
+import { clicksQuerySchema } from "../validators/links.validator.js";
 
 export async function createLink(req, res) {
     try {
@@ -62,32 +63,41 @@ export async function getLinkByCode(req, res) {
             message: "Internal server error"
         });
     }
-
 }
+
+
 
 export async function getLinkClicks(req, res) {
     try {
+
         const { code } = req.params;
 
-        const after = req.query.after || null;
-        const limit = Number(req.query.limit) || 10;
+        const query = clicksQuerySchema.parse(req.query);
 
         const clicks = await getLinkClicksService(
             code,
-            after,
-            limit
+            query.after || null,
+            query.limit || 10
         );
 
         res.status(200).json(clicks);
 
     } catch (error) {
+
+        if (error instanceof ZodError) {
+            return res.status(400).json({
+                message: "Validation error",
+                errors: error.issues
+            });
+        }
+
         console.log(error);
 
         res.status(500).json({
             message: "Internal server error"
         });
     }
-    }
+}
 
     export async function deleteLink(req, res) {
     try {

@@ -12,3 +12,16 @@ export const createLinkSchema = z.object({
 
   expires_at: z.string().datetime().optional()
 });
+
+
+export const clicksQuerySchema = z.object({
+  after: z.string().datetime().optional(),
+
+  limit: z
+    .coerce
+    .number()
+    .int()
+    .min(1)
+    .max(100)
+    .optional()
+});
