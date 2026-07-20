@@ -25,6 +25,7 @@ export async function createLinkService(data) {
     return result.rows[0];
 }
 
+
 export async function getLinkByCodeService(code) {
     const result = await db.query(
         `
@@ -37,6 +38,7 @@ export async function getLinkByCodeService(code) {
 
     return result.rows[0];
 }
+
 
 export async function getLinkClicksService(code, after, limit) {
 
@@ -55,24 +57,51 @@ export async function getLinkClicksService(code, after, limit) {
         };
     }
 
+    const linkId = link.rows[0].id;
 
-    const result = await db.query(
-        `
-        SELECT 
-            clicks.*
+    let query = `
+        SELECT
+            clicks.id,
+            clicks.clicked_at,
+            clicks.referrer,
+            clicks.user_agent
         FROM clicks
         WHERE link_id = $1
-        ORDER BY clicked_at ASC
-        LIMIT $2
-        `,
-        [
-            link.rows[0].id,
-            limit
-        ]
-    );
+    `;
 
-    return result.rows;
+    const values = [linkId];
+
+    if (after) {
+        query += `
+            AND (clicked_at, id) > ($2, $3)
+        `;
+
+        values.push(
+            after.clicked_at,
+            after.id
+        );
+    }
+
+    query += `
+        ORDER BY clicked_at ASC, id ASC
+        LIMIT $${values.length + 1}
+    `;
+
+    values.push(limit);
+
+    const result = await db.query(query, values);
+
+    return {
+        data: result.rows,
+        next_cursor: result.rows.length > 0
+            ? {
+                id: result.rows[result.rows.length - 1].id,
+                clicked_at: result.rows[result.rows.length - 1].clicked_at
+            }
+            : null
+    };
 }
+
 
 export async function deleteLinkService(code) {
     const result = await db.query(
@@ -87,10 +116,11 @@ export async function deleteLinkService(code) {
     return result.rows[0];
 }
 
+
 export async function getLinkClicksCsvService(code) {
     const result = await db.query(
         `
-        SELECT 
+        SELECT
             clicks.id,
             clicks.clicked_at,
             clicks.referrer,
@@ -98,7 +128,7 @@ export async function getLinkClicksCsvService(code) {
         FROM clicks
         JOIN links ON links.id = clicks.link_id
         WHERE links.code = $1
-        ORDER BY clicks.clicked_at ASC
+        ORDER BY clicks.clicked_at ASC, clicks.id ASC
         `,
         [code]
     );
