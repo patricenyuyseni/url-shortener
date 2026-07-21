@@ -1,2 +1,0 @@
-DATABASE_URL=postgresql://postgres:patrice08@localhost:5432/shortener_test
-PORT=3001
