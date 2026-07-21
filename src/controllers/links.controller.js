@@ -121,7 +121,13 @@ export async function deleteLink(req, res) {
     try {
         const { code } = req.params;
 
-        await deleteLinkService(code);
+        const deleted = await deleteLinkService(code);
+
+        if (!deleted) {
+            return res.status(404).json({
+                message: "Link not found"
+            });
+        }
 
         res.status(204).send();
 
@@ -134,7 +140,6 @@ export async function deleteLink(req, res) {
         });
     }
 }
-
 
 export async function getLinkClicksCsv(req, res) {
     try {
