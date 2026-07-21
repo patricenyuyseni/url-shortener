@@ -142,6 +142,12 @@ export async function getLinkClicksCsv(req, res) {
 
         const clicks = await getLinkClicksCsvService(code);
 
+        if (clicks?.status === "not_found") {
+            return res.status(404).json({
+                message: "Link not found"
+            });
+        }
+
         res.setHeader("Content-Type", "text/csv");
         res.setHeader(
             "Content-Disposition",

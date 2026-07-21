@@ -118,6 +118,22 @@ export async function deleteLinkService(code) {
 
 
 export async function getLinkClicksCsvService(code) {
+
+    const link = await db.query(
+        `
+        SELECT id
+        FROM links
+        WHERE code = $1
+        `,
+        [code]
+    );
+
+    if (link.rows.length === 0) {
+        return {
+            status: "not_found"
+        };
+    }
+
     const result = await db.query(
         `
         SELECT
