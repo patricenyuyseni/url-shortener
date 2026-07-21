@@ -77,9 +77,17 @@ export async function getLinkClicks(req, res) {
 
         const query = clicksQuerySchema.parse(req.query);
 
+        const after =
+            query.after_clicked_at && query.after_id
+                ? {
+                    clicked_at: query.after_clicked_at,
+                    id: query.after_id
+                }
+                : null;
+
         const clicks = await getLinkClicksService(
             code,
-            query.after || null,
+            after,
             query.limit || 10
         );
 

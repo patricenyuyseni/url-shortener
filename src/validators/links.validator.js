@@ -15,13 +15,18 @@ export const createLinkSchema = z.object({
 
 
 export const clicksQuerySchema = z.object({
-  after: z.string().datetime().optional(),
+    after_clicked_at: z.string().datetime().optional(),
 
-  limit: z
-    .coerce
-    .number()
-    .int()
-    .min(1)
-    .max(100)
-    .optional()
+    after_id: z.coerce
+        .number()
+        .int()
+        .positive()
+        .optional(),
+
+    limit: z.coerce
+        .number()
+        .int()
+        .min(1)
+        .max(100)
+        .optional()
 });
