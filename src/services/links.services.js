@@ -1,6 +1,7 @@
 import { db } from "../db.js";
 import { generateCode } from "../utils/codeGenerator.js";
 
+
 export async function createLinkService(data) {
     let { target_url, code, expires_at } = data;
 
@@ -40,6 +41,7 @@ export async function getLinkByCodeService(code) {
 }
 
 
+
 export async function getLinkClicksService(code, after, limit) {
 
     const link = await db.query(
@@ -51,13 +53,16 @@ export async function getLinkClicksService(code, after, limit) {
         [code]
     );
 
+
     if (link.rows.length === 0) {
         return {
             status: "not_found"
         };
     }
 
+
     const linkId = link.rows[0].id;
+
 
     let query = `
         SELECT
@@ -66,14 +71,23 @@ export async function getLinkClicksService(code, after, limit) {
             clicks.referrer,
             clicks.user_agent
         FROM clicks
-        WHERE link_id = $1
+        WHERE clicks.link_id = $1
     `;
+
 
     const values = [linkId];
 
+
     if (after) {
+
         query += `
-            AND (clicked_at, id) > ($2, $3)
+            AND (
+                clicks.clicked_at > $2::timestamptz
+                OR (
+                    clicks.clicked_at = $2::timestamptz
+                    AND clicks.id > $3
+                )
+            )
         `;
 
         values.push(
@@ -82,14 +96,18 @@ export async function getLinkClicksService(code, after, limit) {
         );
     }
 
+
     query += `
-        ORDER BY clicked_at ASC, id ASC
+        ORDER BY clicks.clicked_at ASC, clicks.id ASC
         LIMIT $${values.length + 1}
     `;
 
+
     values.push(limit);
 
+
     const result = await db.query(query, values);
+
 
     return {
         data: result.rows,
@@ -102,8 +120,8 @@ export async function getLinkClicksService(code, after, limit) {
     };
 }
 
-
 export async function deleteLinkService(code) {
+
     const result = await db.query(
         `
         DELETE FROM links
@@ -128,11 +146,13 @@ export async function getLinkClicksCsvService(code) {
         [code]
     );
 
+
     if (link.rows.length === 0) {
         return {
             status: "not_found"
         };
     }
+
 
     const result = await db.query(
         `
@@ -148,6 +168,7 @@ export async function getLinkClicksCsvService(code) {
         `,
         [code]
     );
+
 
     return result.rows;
 }
