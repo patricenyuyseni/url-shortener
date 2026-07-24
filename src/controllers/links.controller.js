@@ -49,6 +49,7 @@ export async function createLink(req, res) {
 }
 
 
+
 export async function getLinkByCode(req, res) {
     try {
         const { code } = req.params;
@@ -74,23 +75,21 @@ export async function getLinkByCode(req, res) {
 }
 
 
+
 export async function getLinkClicks(req, res) {
     try {
         const { code } = req.params;
 
         const query = clicksQuerySchema.parse(req.query);
 
+
+        // Cursor pagination using only id
         const after =
-            query.after_clicked_at && query.after_id !== undefined
+            query.after_id !== undefined
                 ? {
-                    clicked_at: query.after_clicked_at,
                     id: query.after_id
                 }
                 : null;
-
-
-        console.log("QUERY:", query);
-        console.log("AFTER:", after);
 
 
         const clicks = await getLinkClicksService(
@@ -128,6 +127,7 @@ export async function getLinkClicks(req, res) {
 }
 
 
+
 export async function deleteLink(req, res) {
     try {
         const { code } = req.params;
@@ -153,6 +153,7 @@ export async function deleteLink(req, res) {
 }
 
 
+
 export async function getLinkClicksCsv(req, res) {
     try {
         const { code } = req.params;
@@ -167,6 +168,7 @@ export async function getLinkClicksCsv(req, res) {
 
 
         res.setHeader("Content-Type", "text/csv");
+
         res.setHeader(
             "Content-Disposition",
             `attachment; filename="${code}-clicks.csv"`

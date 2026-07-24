@@ -78,27 +78,20 @@ export async function getLinkClicksService(code, after, limit) {
     const values = [linkId];
 
 
+    // Cursor pagination using id only
+    // Avoids timestamp precision problems
     if (after) {
 
         query += `
-            AND (
-                clicks.clicked_at > $2::timestamptz
-                OR (
-                    clicks.clicked_at = $2::timestamptz
-                    AND clicks.id > $3
-                )
-            )
+            AND clicks.id > $2
         `;
 
-        values.push(
-            after.clicked_at,
-            after.id
-        );
+        values.push(after.id);
     }
 
 
     query += `
-        ORDER BY clicks.clicked_at ASC, clicks.id ASC
+        ORDER BY clicks.id ASC
         LIMIT $${values.length + 1}
     `;
 
@@ -113,12 +106,13 @@ export async function getLinkClicksService(code, after, limit) {
         data: result.rows,
         next_cursor: result.rows.length > 0
             ? {
-                id: result.rows[result.rows.length - 1].id,
-                clicked_at: result.rows[result.rows.length - 1].clicked_at
+                id: result.rows[result.rows.length - 1].id
             }
             : null
     };
 }
+
+
 
 export async function deleteLinkService(code) {
 
@@ -133,6 +127,7 @@ export async function deleteLinkService(code) {
 
     return result.rows[0];
 }
+
 
 
 export async function getLinkClicksCsvService(code) {
