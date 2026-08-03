@@ -1,7 +1,22 @@
 import { z } from "zod";
 
+
+const httpUrl = z
+    .string()
+    .url()
+    .refine(
+        (value) => {
+            const url = new URL(value);
+            return url.protocol === "http:" || url.protocol === "https:";
+        },
+        {
+            message: "Only HTTP and HTTPS URLs are allowed"
+        }
+    );
+
+
 export const createLinkSchema = z.object({
-    target_url: z.string().url(),
+    target_url: httpUrl,
 
     code: z
         .string()
@@ -13,6 +28,7 @@ export const createLinkSchema = z.object({
     expires_at: z.string().datetime().optional()
 });
 
+
 export const codeParamSchema = z.object({
     code: z
         .string()
@@ -20,6 +36,7 @@ export const codeParamSchema = z.object({
         .max(16)
         .regex(/^[A-Za-z0-9_-]+$/)
 });
+
 
 export const clicksQuerySchema = z.object({
     after_clicked_at: z.string().datetime().optional(),
